@@ -1,0 +1,1 @@
+This module can let you make some user restriction policies (set by Device Admin App or Work Profile, e.g. Microsoft Intune) nonfunctional. Especially some device-wide policies, even it is in the Work Profile but affected the outside whole android environment(Your Personal Profile).
