@@ -13,7 +13,7 @@ on your own device. It hooks the client-side `DevicePolicyManager` and
 
 Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
 
-<img src="screenshot.png" width="320" alt="DuckPolicy v3 UI">
+<img src="https://raw.githubusercontent.com/Xposed-Modules-Repo/com.strawing.duckdevicepolicy/main/screenshot.png" width="320" alt="DuckPolicy v3 UI">
 
 ## Features
 
