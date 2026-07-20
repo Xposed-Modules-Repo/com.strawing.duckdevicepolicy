@@ -18,7 +18,7 @@ Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
 ## Features
 
 - **Master toggle** + **per-category** switches, with **All / None** quick actions.
-- 12 categories:
+- 13 categories:
   - **Camera block** — report the camera as not disabled
   - **Screenshot / screen-record block** — allow screen capture
   - **Device admin & owner checks** — look unmanaged (no admin / owner / managed profile)
@@ -31,6 +31,12 @@ Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
   - **Kiosk / lock-task mode** — report lock-task as permitted / unrestricted
   - **Allowed IMEs & accessibility** — remove input-method / accessibility allow-lists
   - **Misc** — auto-time, cross-profile, Bluetooth and other smaller restrictions
+  - **Outlook enrollment gate** *(new in 3.1)* — hooks Outlook's own private
+    `DevicePolicy` class (`requiresDeviceManagement` / `isPolicyApplied`) so it
+    skips the "your organization requires device management" enrollment screen.
+    Different layer than the rows above (Outlook's own gate, not the framework
+    or Intune MAM SDK); only installs when scoped into
+    `com.microsoft.office.outlook`.
 - **Material You** dynamic colours (Android 12+) and an adaptive icon.
 - Small: R8 + resource shrinking, ~1.8 MB.
 
@@ -44,8 +50,13 @@ Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
 3. Reboot (or force-stop the scoped processes) to apply.
 
 > [!IMPORTANT]
-> **Do not scope the MDM app itself** (e.g. Microsoft Intune / Company Portal) —
-> hooking it can expose Xposed/root to detection.
+> **Do not scope the MDM app itself** (e.g. Microsoft Intune / Company Portal)
+> **or Microsoft Authenticator** — hooking those can expose Xposed/root to
+> detection. Outlook is different and included in the default scope: it has no
+> meaningful Xposed/root detection, only its own enrollment-gate check, which
+> the **Outlook enrollment gate** category neutralises. It does **not** touch
+> Intune MAM app-protection restrictions (screenshot block, copy/paste, PIN)
+> inside Outlook — those are enforced independently and need a separate hook.
 >
 > Settings are shared cross-process via `XSharedPreferences`, so **enable the
 > module and reboot once** before relying on the toggles — a freshly-installed,
