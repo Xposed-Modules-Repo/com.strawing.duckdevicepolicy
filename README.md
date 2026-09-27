@@ -48,7 +48,7 @@ first time a category actually fires. Quote both when reporting a problem. The
 Diagnostics tab is usually empty — the framework's file store is root-owned, so
 the log is the only channel that works.
 
-Source & issues: **https://github.com/Bouteillepleine/FuckDevicePolicy** ·
+Source & issues: **https://github.com/Bouteillepleine/DuckDevicePolicy** ·
 fork of [liyafe1997/FuckDevicePolicy](https://github.com/liyafe1997/FuckDevicePolicy).
 
 ---
