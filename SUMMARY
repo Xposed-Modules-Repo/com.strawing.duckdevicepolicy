@@ -1,1 +1,1 @@
-Make apps see no device-policy restrictions on your own device — a per-category DevicePolicyManager & UserManager bypass with a master toggle and a Material You UI. 4.1 restores sideloading from normal apps. Needs an LSPosed 2.x fork (modern Xposed API 101+).
+Make apps see no device-policy restrictions on your own device — a per-category DevicePolicyManager & UserManager bypass with a master toggle. Clears the unknown-sources install block and, since 4.3, the device-owner "fully managed" checks. Formerly DuckPolicy. Needs an LSPosed 2.x fork (modern Xposed API 101+).

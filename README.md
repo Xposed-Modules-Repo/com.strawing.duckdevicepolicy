@@ -1,14 +1,22 @@
-# DuckPolicy
+# DuckDevicePolicy
 
 An LSPosed / Xposed module that makes apps see **no device-policy restrictions**
 on your own device. It hooks `DevicePolicyManager` and `UserManager` restriction
 *checks* and returns the "no restriction" answer — **per category**, behind a
 **master toggle**.
 
-> **4.1 fixes sideloading.** If a work profile or MDM blocked installing APKs
-> from normal apps (Telegram, a browser, a file manager) and DuckPolicy did not
-> help, that is fixed — see *How it works* below for why the earlier builds could
-> not.
+> **Renamed in 4.2.** The module was called *DuckPolicy*; the package is unchanged,
+> so it updates in place and keeps your settings and scope.
+
+> **4.3 hides the device owner.** If an app refuses a feature because the device is
+> "fully managed" — Google Photos and its Locked Folder being the usual one — that
+> check was not covered before 4.3. Put the app in the module scope and turn on
+> **Device-owner / fully-managed checks**.
+
+> **4.1 fixed sideloading.** If a work profile or MDM blocks installing APKs from
+> normal apps (Telegram, a browser, a file manager), the **App install / uninstall
+> block** category clears it — but it needs **System Framework** in the scope. See
+> *How it works* below for why an app-only scope cannot do it.
 
 > v3 is a full Kotlin rewrite and fork of
 > [liyafe1997/FuckDevicePolicy](https://github.com/liyafe1997/FuckDevicePolicy).
@@ -29,15 +37,23 @@ Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
 > start from the defaults (everything on, as shipped). Your **scope is preserved**.
 > Upgrading 4.0 → 4.1 keeps everything; the two new categories arrive switched on.
 
-![DuckPolicy v3 UI](https://raw.githubusercontent.com/Xposed-Modules-Repo/com.strawing.duckdevicepolicy/209fca574d143c7b459c0935f8626c684c1a761f/screenshot.png)
+![DuckDevicePolicy UI](https://raw.githubusercontent.com/Xposed-Modules-Repo/com.strawing.duckdevicepolicy/209fca574d143c7b459c0935f8626c684c1a761f/screenshot.png)
 
 ## Features
 
 - **Master toggle** + **per-category** switches, with **All / None** quick actions.
-- 15 categories:
+- **Three tabs** since 4.2 — Status (framework, API level, your actual scope),
+  Categories (split into device-wide and app-facing) and Diagnostics.
+- 17 categories:
   - **Camera block** — report the camera as not disabled
   - **Screenshot / screen-record block** — allow screen capture
-  - **Device admin & owner checks** — look unmanaged (no admin / owner / managed profile)
+  - **Device admin & managed-profile checks** — look unmanaged (no admin, no managed profile)
+  - **Device-owner / fully-managed checks** *(new in 4.3)* — hide the device owner:
+    `getDeviceOwner`, `getDeviceOwnerComponentOnAnyUser`, `getDeviceOwnerNameOnAnyUser`,
+    `isDeviceOwnerAppOnAnyUser`, `getProfileOwner*`,
+    `isOrganizationOwnedDeviceWithManagedProfile`, `getActiveAdmins` and friends.
+    This is what an app reads before saying a feature "isn't available on fully
+    managed devices"; **the app must be in the module scope**
   - **Password & PIN policy** — drop length, complexity, expiry and wipe rules
   - **Lock-screen feature limits** — re-enable camera, notifications, etc. on keyguard
   - **Storage-encryption enforcement** — report encryption as not required
@@ -64,7 +80,7 @@ Source, issues & builds: **https://github.com/Bouteillepleine/FuckDevicePolicy**
 
 ## Install & scope
 
-1. Install and enable **DuckPolicy** in LSPosed.
+1. Install and enable **DuckDevicePolicy** in LSPosed.
 2. Set the module **scope**:
    - **System Framework** (`android`) for the broadest, system-wide effect — the
      recommended default for work-profile / user-restriction cases.
@@ -112,6 +128,27 @@ Those rows answer for **every process on the device**, not just scoped ones, so 
 every other category they are deliberately filtered to the specific `DISALLOW_*` keys
 their category names, instead of flattening every restriction the system asks about.
 They require **System Framework** (`android`) scope; from an app's scope they do nothing.
+**Device-owner spoof, device-wide** (4.3, off by default) is the same idea applied to
+`DevicePolicyManagerService`, for when putting the app in the scope is not practical.
+
+### When a category seems to do nothing
+
+Since 4.3 the module says what it did, in the LSPosed log, in every build:
+
+```
+installed 68/68 hooks in system_server
+first hit: package_install via UserManagerService#hasUserRestriction in system_server
+```
+
+`installed N/M` names every row it could **not** resolve, and each category logs the
+first time it actually fires. Between them those two lines separate the three things
+that used to look identical: the category is off or out of scope, the rows never
+attached on your Android version, or they attached and nothing ever asked. Quote them
+when reporting a problem — without them a report cannot be acted on.
+
+Note that the Diagnostics tab in the app is usually empty: the framework's remote-file
+store is root-owned, so a hooked process cannot write to it, and the log is the only
+channel that works.
 
 ## Credits
 
@@ -131,6 +168,15 @@ They require **System Framework** (`android`) scope; from an app's scope they do
 
 > 注意：大部分挂钩改变的是各进程中客户端所「看到」的策略。
 > 请勿将 MDM App 本身（如 Intune / 公司门户）加入作用域。
+
+> **4.2 更名为 DuckDevicePolicy**（包名不变，可直接覆盖升级，设置与作用域均保留）。
+> **4.3 新增「设备所有者 / 完全托管检查」类别**：隐藏 device owner 相关查询
+> （`getDeviceOwner`、`getDeviceOwnerComponentOnAnyUser`、`getActiveAdmins` 等），
+> 用于某些应用以「此功能在完全托管的设备上不可用」为由拒绝功能的情况（如 Google 相册的锁定文件夹）；
+> 需要把该应用加入模块作用域。另有默认关闭的「设备所有者伪装（全设备）」，直接挂钩
+> `DevicePolicyManagerService`，无需逐个应用设置作用域。
+> 4.3 起模块会在 LSPosed 日志中输出 `installed N/M hooks in <进程>` 以及每个类别首次生效的记录，
+> 反馈问题时请附上这两行。
 
 > **4.1 新增：可以正常旁加载 APK 了。**「应用安装 / 卸载限制」与「开发者选项与 USB 调试限制」
 > 两个类别直接挂钩 `system_server` 中的 `com.android.server.pm.UserManagerService`，
