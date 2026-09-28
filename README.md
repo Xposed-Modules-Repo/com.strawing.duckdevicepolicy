@@ -9,10 +9,12 @@ in place and keeps your settings and scope.
 
 **Needs an LSPosed 2.x fork** (Xposed API 101+). Mainline 1.9.x will not load it.
 
-**Scope matters.** `android` (System Framework) for the device-wide categories —
-app install / uninstall, developer options, device-owner spoof. The target app for
-everything else, including the device-owner checks Google Photos reads for Locked
-Folder. Never scope Intune / Company Portal / Authenticator.
+**Scope matters.** Tick every framework entry your manager offers — `android`,
+`system`, `system_server`. They disagree about which one actually reaches
+system_server, and the wrong one silently does nothing. That covers the device-wide
+categories: app install / uninstall, developer options, device-owner spoof. The
+target app for everything else, including the device-owner checks Google Photos reads
+for Locked Folder. Never scope Intune / Company Portal / Authenticator.
 
 **Not working?** The LSPosed log has `installed N/M hooks in <process>`, which names
 anything that did not resolve, and `first hit: <category> ...` the first time one
@@ -29,8 +31,10 @@ Source & issues: **https://github.com/Bouteillepleine/DuckDevicePolicy** · fork
 `DevicePolicyManager` / `UserManager` 的检查并返回「无限制」，带总开关。
 原名 DuckPolicy，包名不变，可直接覆盖升级。**需要 LSPosed 2.x 分支**（Xposed API 101+）。
 
-作用域决定能否生效：**系统框架（`android`）** 用于全设备类别（应用安装/卸载、开发者选项、
-设备所有者伪装）；**目标应用** 用于其余类别，包括 Google 相册锁定文件夹读取的
-「设备所有者 / 完全托管检查」。请勿将 Intune / 公司门户 / Authenticator 加入作用域。
+作用域决定能否生效：请把管理器提供的**所有框架条目**都勾上——`android`、`system`、
+`system_server`，不同管理器对「哪一个真正进入 system_server」并不一致，勾错的那个不会有任何效果。
+它们对应全设备类别（应用安装/卸载、开发者选项、设备所有者伪装）；**目标应用** 用于其余类别，
+包括 Google 相册锁定文件夹读取的「设备所有者 / 完全托管检查」。
+请勿将 Intune / 公司门户 / Authenticator 加入作用域。
 
 反馈问题时请附上 LSPosed 日志中的 `installed N/M hooks in <进程>` 与 `first hit:` 两行。
